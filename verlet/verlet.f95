@@ -9,19 +9,19 @@ PROGRAM verlet
   INTEGER :: k, i
 
   tau = 0.2_wp
-  m = 1
-  x = 0
-  y = 0
-  z = 0
-  v_x = 0
-  v_y = 0
-  v_z = 0
-  f_x = 0
-  f_y = 0.1
-  f_z = 0
-  f_xn = 0
-  f_yn = 0.1
-  f_zn = 0
+  m = 1_wp
+  x = 0_wp
+  y = 0_wp
+  z = 0_wp
+  v_x = 0_wp
+  v_y = 0_wp
+  v_z = 0_wp
+  f_x = 0_wp
+  f_y = 0.1_wp
+  f_z = 0_wp
+  f_xn = 0_wp
+  f_yn = 0.1_wp
+  f_zn = 0_wp
   i = 100
 
   DO k = 1, i
@@ -37,6 +37,9 @@ PROGRAM verlet
     x = xn
     y = yn
     z = zn
+    f_x = f_xn
+    f_y = f_yn
+    f_z = f_zn
 
     PRINT *, "The positions of the particle at the", k, "-th iteration at time =", tau * k, ":"
     PRINT *, xn
