@@ -1,6 +1,6 @@
 PROGRAM verlet_LJ
     
-    IMPLICIT NONE                                                               ! inlilne cpmment
+    IMPLICIT NONE                                                               ! inlilne comment
     INTEGER, PARAMETER :: wp =SELECTED_REAL_KIND (p=13, r=300)
 
     ! PARAMETERS & SATATE
@@ -26,17 +26,16 @@ PROGRAM verlet_LJ
     
     vmat(1,:) = (/ 0.0_wp, 0.0_wp, 0.0_wp /)                                    ! initial velocities set to 0
     vmat(2,:) = (/ 0.0_wp, 0.0_wp, 0.0_wp /)                                    ! given by question
-
-    fmat(1,:) = (/ 0.0_wp, 0.0_wp, 0.0_wp /)                                    !  initial assumption for forces
-    fmat(2,:) = (/ 0.0_wp, 0.0_wp, 0.0_wp /)                                    ! given by question
    
     epsilon = 0.000112991_wp                                                    ! given by question
     sigma = 5.2186_wp                                                           ! given by question
-    m = 20.1797_wp                                                              ! given by question
-    number = 2
+    m = 20.1797_wp * 1822.888486_wp                                             ! given by question
+    !number = 2
     tau = 1.0_wp
-    i = 10                                                                      ! just to chek
-
+    i = 6000                                                                    ! just to chek
+     
+    OPEN (UNIT=12, FILE="Neon.xyz", STATUS="replace", ACTION="write")
+    
     DO k = 1, i
 
         dx = xmat(2,:) - xmat(1,:)                                                        ! displacement vector r_2 - r_1 = [dx,dy,dz]
@@ -45,29 +44,51 @@ PROGRAM verlet_LJ
 
         v_prime = 4_wp*epsilon * ( ( -12_wp * (sigma**12) / (r**13) ) + ( 6_wp * (sigma**6) / (r**7) ) )    ! v_prime = dV/dr for Lennard-Jones
 
+        fmat(1,:) = -v_prime * ( (dx(:)) / r )                                            ! new force on first atom in 3 directions
+        fmat(2,:) = -fmat(1,:)                                                            ! new force on second atom due to the NEWTON's 3rd law
+
         x_nmat(1,:) = xmat(1,:) + tau * vmat(1,:) + (tau**2) * fmat(1,:) / (2_wp * m)     ! new positions of first atom in 3 directions
         x_nmat(2,:) = xmat(2,:) + tau * vmat(2,:) + (tau**2) * fmat(2,:) / (2_wp * m)     ! new positions of second atom in 3 directions
+
+        dx = x_nmat(2,:) - x_nmat(1,:)                                                    ! "dx" in updated position
+        r = sqrt(sum( dx ** 2 ))                                                          ! "r" in updated position
+        v_prime = 4_wp * epsilon * ( ( -12_wp * (sigma**12) / (r**13) ) + ( 6_wp * (sigma**6) / (r**7) ) )
 
         f_nmat(1,:) = -v_prime * ( (dx(:)) / r )                                          ! new force on first atom in 3 directions
         f_nmat(2,:) = -f_nmat(1,:)                                                        ! new force on second atom due to the NEWTON's 3rd law
 
-        v_nmat(1,:) = vmat(1,:) + (tau / (2_wp*m)) * (fmat(1,:) + f_nmat(1,:))            ! new velocitiy of first atom in "x,y,z"
-        v_nmat(2,:) = vmat(2,:) + (tau / (2_wp*m)) * (fmat(2,:) + f_nmat(2,:))            ! new velocitiy of second atom
+        v_nmat(1,:) = vmat(1,:) + (tau / (2.0_wp*m)) * (fmat(1,:) + f_nmat(1,:))            ! new velocitiy of first atom in "x,y,z"
+        v_nmat(2,:) = vmat(2,:) + (tau / (2.0_wp*m)) * (fmat(2,:) + f_nmat(2,:))            ! new velocitiy of second atom
 
         xmat(:,:) = x_nmat(:,:)                                                           ! new positions become current
         vmat(:,:) = v_nmat(:,:)                                                           ! new velocities become current
         fmat(:,:) = f_nmat(:,:)                                                           ! new forces become current
 
+
+        WRITE (UNIT=12, FMT=*) xmat(1,:) 
+        WRITE (UNIT=12, FMT=*) xmat(2,:)
+        WRITE (UNIT=12, FMT=*) f_nmat(1,:)
+        WRITE (UNIT=12, FMT=*) f_nmat(2,:)
+        WRITE (UNIT=12, FMT=*) v_nmat(1,:)
+        WRITE (UNIT=12, FMT=*) v_nmat(2,:)
+
         PRINT *, "The positions of the particle at the", k, "-th iteration at time =", tau * k, ":"
         PRINT *, x_nmat(1,:)
         PRINT *, x_nmat(2,:)
-        PRINT *, "---------------------------------"
+        PRINT *, "---------------X------------------"
+        PRINT *, xmat(1,:)
+        PRINT *, xmat(2,:)
+        PRINT *, "---------------V_N-----------------"
         PRINT *, v_nmat(1,:)
         PRINT *, v_nmat(2,:)
-        PRINT *, "---------------------------------"
+        PRINT *, "----------------F-----------------"
+        PRINT *, fmat(1,:)
+        PRINT *, fmat(2,:)
+        PRINT *, "----------------F_N-----------------"
         PRINT *, f_nmat(1,:)
         PRINT *, f_nmat(2,:)
+        
 
     END DO
-
+    CLOSE (12)
 END PROGRAM VERLET_LJ
